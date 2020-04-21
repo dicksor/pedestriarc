@@ -7,7 +7,7 @@
 from PIL import Image
 import glob
 import json
-from test import test
+from processImage import findCrosswalk
 
 # Functions
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         print("data.json file has been successfuly saved!")
 
     for img in image_list:
-        test(img.filename)
+        findCrosswalk(img.filename)
 
 
 
