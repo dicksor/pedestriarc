@@ -77,7 +77,7 @@ def select_white_yellow(image):
     print("Yellow in image", np.round(yellow_ratio*100, 2))
 
 #process a frame
-def process(im):
+def process(im, W, H):
     start = timeit.timeit() #start timer
 
     #initialize some variables
@@ -219,82 +219,84 @@ def process(im):
 #=============================#
 #---------MAIN PROGRAM--------#
 #=============================#
-#initialization
-cap = cv2.imread('test3.png', cv2.IMREAD_UNCHANGED)
 
-W = cap.shape[0]
-H = cap.shape[1]
+def test(filename):
+    #initialization
+    cap = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
 
-#Define a new resolution 
-ratio = H/W
-W = 800
-H = int(W * ratio)
+    W = cap.shape[0]
+    H = cap.shape[1]
 
-Dx = []
-Dy = []
-after =0
-DxAve =0
-Dxold =0
-DyAve =0
-Dyold =0
-i = 0
-state = ""
+    #Define a new resolution 
+    ratio = H/W
+    W = 800
+    H = int(W * ratio)
 
-img = np.array(PIL.Image.fromarray(cap).resize((H, W)))
+    Dx = []
+    Dy = []
+    after =0
+    DxAve =0
+    Dxold =0
+    DyAve =0
+    Dyold =0
+    i = 0
+    state = ""
 
-#draw camera's POV
-cv2.circle(img,(int(W/2),int(H/2)),5,(0,0,255),8)
+    img = np.array(PIL.Image.fromarray(cap).resize((H, W)))
 
-try:
-    img, dx, dy = process(img)
-    if (i < 6):
-        Dx.append(dx)
-        Dy.append(dy)
-        i=i+1
+    #draw camera's POV
+    cv2.circle(img,(int(W/2),int(H/2)),5,(0,0,255),8)
 
-    else:
-        DxAve = sum(Dx)/len(Dx)
-        DyAve = sum(Dy)/len(Dy)
-        del Dx[:]
-        del Dy[:]
-        i=0
+    try:
+        img, dx, dy = process(img, W, H)
+        if (i < 6):
+            Dx.append(dx)
+            Dy.append(dy)
+            i=i+1
 
-    if (DyAve > 30) and (abs(DxAve) < 300):        
-        #check if the vanishing point and the next vanishing point aren't too far from each other 
-        if (((DxAve - Dxold)**2 + (DyAve - Dyold)**2) < 150**2) == True:  ##distance 150 px max 
-            cv2.line(img,(int(W/2),int(H/2)),(int(W/2)+int(DxAve),int(H/2)+int(DyAve)),(0,0,255),7)
+        else:
+            DxAve = sum(Dx)/len(Dx)
+            DyAve = sum(Dy)/len(Dy)
+            del Dx[:]
+            del Dy[:]
+            i=0
+
+        if (DyAve > 30) and (abs(DxAve) < 300):        
+            #check if the vanishing point and the next vanishing point aren't too far from each other 
+            if (((DxAve - Dxold)**2 + (DyAve - Dyold)**2) < 150**2) == True:  ##distance 150 px max 
+                cv2.line(img,(int(W/2),int(H/2)),(int(W/2)+int(DxAve),int(H/2)+int(DyAve)),(0,0,255),7)
+                
+                #walking directions
+                if abs(DxAve) < 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
+                    state = 'Straight'
+                    cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,0),2,cv2.LINE_AA)
+
+                elif DxAve > 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
+                    state = 'Right'
+                    cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)
+
+                elif DxAve < 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
+                    state = 'Left'
+                    cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)
+            else:
+                cv2.line(img,(int(W/2),int(H/2)),(int(W/2)+int(Dxold),int(H/2)+int(Dyold)),(0,0,255),)
             
-            #walking directions
-            if abs(DxAve) < 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
-                state = 'Straight'
+            #walking directions 
+            if state == 'Straight':
                 cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,0),2,cv2.LINE_AA)
+            else:
+                cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)           
 
-            elif DxAve > 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
-                state = 'Right'
-                cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)
+            Dxold = DxAve
+            Dyold = DyAve
 
-            elif DxAve < 80 and DyAve > 100 and abs(Dxold-DxAve) < 20:
-                state = 'Left'
-                cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)
-        else:
-            cv2.line(img,(int(W/2),int(H/2)),(int(W/2)+int(Dxold),int(H/2)+int(Dyold)),(0,0,255),)
-        
-        #walking directions 
-        if state == 'Straight':
-            cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,0),2,cv2.LINE_AA)
-        else:
-            cv2.putText(img,state,(50,50), cv2.FONT_HERSHEY_PLAIN, 3,(0,0,255),2,cv2.LINE_AA)           
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno, e)
 
-        Dxold = DxAve
-        Dyold = DyAve
+    #show & save
+    img = cv2.imshow('Processed',img)
+    cv2.waitKey()
 
-except Exception as e:
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(exc_type, fname, exc_tb.tb_lineno, e)
-
-#show & save
-img = cv2.imshow('Processed',img)
-cv2.waitKey()
-
-cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
