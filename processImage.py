@@ -220,7 +220,7 @@ def process(im, W, H):
 #---------MAIN PROGRAM--------#
 #=============================#
 
-def test(filename):
+def findCrosswalk(filename):
     #initialization
     cap = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
 
