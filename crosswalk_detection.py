@@ -7,6 +7,7 @@
  Papers:    https://www.researchgate.net/publication/320675020_Crosswalk_navigation_for_people_with_visual_impairments_on_a_wearable_device
 			https://ieeexplore.ieee.org/document/7873114
 			https://pdfs.semanticscholar.org/19d9/becce00a500bdd1cad5a19f9f16175347096.pdf
+			http://stephense.com/research/papers/mva03.pdf
 '''
 
 #==========================#
@@ -165,6 +166,8 @@ def process(img_src_filename):
 	img_blur = cv.medianBlur(img, 5)
 
 	HEIGHT, WIDTH = img_blur.shape
+	if WIDTH > 680:
+		return
 
 	# The block size parameters is base on the size of the given dataset
 	# A neural network based on smaller resolution could be useful for the future (cf: first papers)
@@ -176,15 +179,12 @@ def process(img_src_filename):
 	# Finding the potential candidates
 	size_max = 0.2 * HEIGHT * WIDTH
 	size_min = 0.5 * 10 ** -3 * HEIGHT * WIDTH
-	print(f'sizeMax: {size_max}, sizeMin: {size_min}')
 
 	# 3. find contours and  draw the green lines on the white strips
 	contours, hierarchy = cv.findContours(
 		th3, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
 
 	mask = np.ones(th3.shape[:2], dtype="uint8") * 255
-
-	print(f'ContoursNB: {len(contours)}')
 
 	# loop over the contours
 	CONTOURS = []
@@ -201,8 +201,6 @@ def process(img_src_filename):
 	CANDIDATES = []
 	for c in CONTOURS:
 		CANDIDATES.append(draw_debug_candidates(c, img_color))
-
-	print(CANDIDATES)
 
 	# ==============
 	# CONSITENCY !!!
@@ -237,6 +235,9 @@ def process(img_src_filename):
 				if sj == sk or si == sk:
 					continue
 
+				if sk[1][0]/sk[1][1] > 0.5:
+					continue
+
 				EL = 0.1 * WIDTH
 				# sk distance from line of si sj
 				center_sk = np.asarray(sk[0])
@@ -248,7 +249,6 @@ def process(img_src_filename):
 				# sk parralel
 				angle = np.rad2deg(np.arctan2(
 					center_sj[1] - center_si[1], center_sj[0] - center_si[0]))
-				print(f'{angle}, {sk[2]}, {angle - sk[2]}')
 				if abs(angle - sk[2]) < 15:
 					continue
 
@@ -281,17 +281,14 @@ def process(img_src_filename):
 				WIDTHIJ.append(sk[1][0])
 				LENGTHIJ.append(sk[1][1])
 
-			print(SETIJ)
 			# Orientation
 			mean_orientation = np.mean(ORIENTTATIONIJ)
 			mean_distance = np.mean(DISTANCEIJ)
 			mean_width = np.mean(WIDTHIJ)
 			mean_length = np.mean(LENGTHIJ)
 
-			print(mean_orientation, len(SETIJ))
 			SETIJ = [c for c in SETIJ if c[0][2] < mean_orientation +
 					 10 and c[0][2] > mean_orientation - 10]
-			print(f'newSize: { len(SETIJ)}')
 
 			SETIJ_WITH_CALCULATED_VALUES = [
 				SETIJ, mean_orientation, mean_distance, mean_width, mean_length]
@@ -299,9 +296,7 @@ def process(img_src_filename):
 			CONSITENCY_SET.append(SETIJ_WITH_CALCULATED_VALUES)
 
 	# Remove set which are too small
-	print(len(CONSITENCY_SET))
 	CONSITENCY_SET = [s for s in CONSITENCY_SET if len(s[0]) >= 3]
-	print(len(CONSITENCY_SET))
 
 	# Calculate the variance for each set
 	VARIANCES_SET = list()
@@ -325,31 +320,12 @@ def process(img_src_filename):
 		D4 = functools.reduce(
 			lambda a, b: a+b, [(s[0][2] - mean_orientation) ** 2 for s in sc[0]]) / len(sc)
 		VARIANCES_SET.append([D1, D2, D3, D4, idx])
-		print(D1, D2, D3, D4)
-		print(len(sc[0]), statistics.pvariance([D1, D2, D3, D4]))
-
-	# DEBUG
-	titles = ['Original Image', 'Adaptive Mean Thresholding',
-			  'Adaptive Gaussian Thresholding', 'After Mask']
-	images = [img_color, th2, th3, mask]
-
-	for i in range(4):
-		plt.subplot(2, 2, i+1), plt.imshow(images[i], 'gray')
-		plt.title(titles[i])
-		plt.xticks([]), plt.yticks([])
-	plt.show()
-
-	contours, hierarchy = cv.findContours(
-		mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
-	cv.drawContours(img_color, contours, -1, (255, 0, 0))
-	cv.imshow("Resul Candidates", img_color)
-	cv.waitKey()
 
 	#FINAL_SET = [s for s in VARIANCES_SET if s[3] < 5]
 	if len(VARIANCES_SET) == 0:
 		print('no crosswalk')
-		exit()
+		return None
+		#exit()
 
 	FINAL_SET = VARIANCES_SET[0]
 	for idx, s in enumerate(VARIANCES_SET):
@@ -357,10 +333,7 @@ def process(img_src_filename):
 			FINAL_SET = s
 
 	for idx, s in enumerate(CONSITENCY_SET):
-		print(f's[0]: {s[0]}')
 		if all(elem in s[0] for elem in CONSITENCY_SET[FINAL_SET[4]][0]):
-			print('HEHE')
-			print(len(s[0]), len(CONSITENCY_SET[FINAL_SET[4]][0]))
 			if len(s[0]) > len(CONSITENCY_SET[FINAL_SET[4]][0]):
 				pass
 				print('HEHE')
@@ -380,15 +353,34 @@ def process(img_src_filename):
 		cv.waitKey()
 	'''
 
+	blank_image = np.zeros((HEIGHT,WIDTH), np.uint8)
 	for c in CONSITENCY_SET[FINAL_SET[4]][0]:
-		print(c[0])
-		cv.ellipse(tadam, c[0], (255, 255, 255), random.randint(0, 5))
-		cv.imshow("Test", tadam)
+		cv.ellipse(tadam, c[0], (255, 255, 255), -1)
+		cv.ellipse(blank_image, c[0], (255, 255, 255), -1)
 
-	print(FINAL_SET)
-	print(len(CONSITENCY_SET))
+	# BOUNDING BOX
+	contours, hierarchy = cv.findContours(blank_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
 
-	print(VARIANCES_SET)
+	boxes = []
+	for c in contours:
+		(x, y, w, h) = cv.boundingRect(c)
+		boxes.append([x,y, x+w,y+h])
+
+	boxes = np.asarray(boxes)
+	left = np.min(boxes[:,0])
+	top = np.min(boxes[:,1])
+	right = np.max(boxes[:,2])
+	bottom = np.max(boxes[:,3])
+
+	cv.rectangle(blank_image, (left,top), (right,bottom), (255, 0, 0), 2)
+
+	return ((left,top), (right,bottom))
+
+	#boundingBox = cv.minAreaRect(allPoint)
+	#cv.drawContours(tadam, boundingBox, (255, 255, 255), random.randint(0, 5))
+
+		#cv.imshow("Test", tadam)
+
 	'''
 	if len(FINAL_SET) > 0:
 		print(FINAL_SET)
@@ -402,9 +394,10 @@ def process(img_src_filename):
 	'''
 
 	# DEBUG
+	'''
 	titles = ['Original Image', 'Adaptive Mean Thresholding',
 			  'Adaptive Gaussian Thresholding', 'After Mask']
-	images = [img_color, th2, th3, mask]
+	images = [img_color, th2, th3, blank_image]
 
 	for i in range(4):
 		plt.subplot(2, 2, i+1), plt.imshow(images[i], 'gray')
@@ -414,11 +407,21 @@ def process(img_src_filename):
 
 	contours, hierarchy = cv.findContours(
 		mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	'''
 
-	cv.drawContours(img_color, contours, -1, (255, 0, 0))
-	cv.imshow("Resul Candidates", img_color)
-	cv.waitKey()
+	#cv.drawContours(img_color, contours, -1, (255, 0, 0))
+	#cv.imshow("Resul Candidates", img_color)
+	#cv.waitKey()
+
+import os
+import glob
 
 if __name__ == "__main__":
 
-	process('tests/G0051425.JPG')
+	filenames = list()
+
+	for filename in glob.iglob('tests/' + '**/*.jpg', recursive=True):
+		filenames.append(filename)
+
+	for filename in filenames:
+		print(process(filename))
