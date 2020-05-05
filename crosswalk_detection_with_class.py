@@ -253,7 +253,7 @@ def process(img_src_filename, DEBUG = False):
 				'Adaptive Gaussian Thresholding', 'After Mask']
 		images = [img_color, th3, blank_image]
 
-		for i in range(4):
+		for i in range(3):
 			plt.subplot(2, 2, i+1), plt.imshow(images[i], 'gray')
 			plt.title(titles[i])
 			plt.xticks([]), plt.yticks([])
@@ -269,7 +269,7 @@ if __name__ == "__main__":
 
 	filenames = list()
 
-	for filename in glob.iglob('tests/' + '**/*.jpg', recursive=True):
+	for filename in glob.iglob('data/' + '**/*.jpg', recursive=True):
 		filenames.append(filename)
 
 	for filename in filenames:

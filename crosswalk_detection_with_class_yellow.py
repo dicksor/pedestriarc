@@ -114,7 +114,7 @@ def process(img_src_filename, DEBUG = False):
 		img_blur, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 157, -20)
 
 	if DEBUG:
-		cv.imshow('threshold', th2)
+		cv.imshow('threshold', th3)
 		cv.waitKey()
 
 	# Calculate the size_max and size_min of a candidates
@@ -260,11 +260,11 @@ def process(img_src_filename, DEBUG = False):
 
 	# DEBUG
 	if DEBUG:
-		titles = ['Original Image', 'Adaptive Mean Thresholding',
+		titles = ['Original Image',
 				'Adaptive Gaussian Thresholding', 'After Mask']
-		images = [img_color, th2, th3, blank_image]
+		images = [img_color, th3, blank_image]
 
-		for i in range(4):
+		for i in range(3):
 			plt.subplot(2, 2, i+1), plt.imshow(images[i], 'gray')
 			plt.title(titles[i])
 			plt.xticks([]), plt.yticks([])
@@ -280,7 +280,7 @@ if __name__ == "__main__":
 
 	filenames = list()
 
-	for filename in glob.iglob('ownSet/' + '**/*.jpg', recursive=True):
+	for filename in glob.iglob('data_yellow/' + '**/*.jpg', recursive=True):
 		filenames.append(filename)
 
 	for filename in filenames:
