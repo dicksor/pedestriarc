@@ -10,6 +10,7 @@ import numpy as np
 import functools
 
 def consistency_calculs(_data):
+	# MAGIC_NUMBER for variency
 	C = np.array([[0.1, 0.05, 0.05, 1]])
 	data = np.array([_data])
 
