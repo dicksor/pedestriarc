@@ -1,7 +1,9 @@
-# Authors : Bianchi Alexandre and Moulin Vincent
-# Class : INF3dlma
-# HE-Arc 2019-2020
-# PedestriArc : Detection of pedestrian crossing
+'''
+ Authors : Bianchi Alexandre and Moulin Vincent
+ Class : INF3dlma
+ HE-Arc 2019-2020
+ PedestriArc : Detection of pedestrian crossing
+'''
 
 # Import
 from PIL import Image
