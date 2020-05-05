@@ -13,6 +13,7 @@ import glob
 import json
 import os
 import pandas
+import warnings
 
 from zipfile import ZipFile
 from crosswalk_detection_with_class import process
@@ -52,6 +53,9 @@ if __name__ == "__main__":
     foldername = "data"
     image_list = readData(foldername)
     result = []
+
+    # disable the warnings
+    warnings.filterwarnings("ignore")
 
     # Create the path where files with crosswalk will be copied
     dir_path = os.path.dirname(os.path.realpath(__file__)) + "/data_filtered"
