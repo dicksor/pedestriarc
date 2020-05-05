@@ -76,6 +76,7 @@ def colorDetection(image):
 
 	'''yellow'''
 	# Range for upper range
+	# MAGIC_NUMBER for yellow range
 	yellow_lower = np.array([20, 50, 50])
 	yellow_upper = np.array([60, 255, 255])
 	mask_yellow = cv.inRange(hsv, yellow_lower, yellow_upper)
@@ -108,8 +109,7 @@ def process(img_src_filename, DEBUG = False):
 
 	# The block size parameters is base on the size of the given dataset
 	# A neural network based on smaller resolution could be useful for the future (cf: first papers)
-	th2 = cv.adaptiveThreshold(
-		img_blur, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 157, -20)
+	# MAGIC_NUMBER for threshold
 	th3 = cv.adaptiveThreshold(
 		img_blur, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 157, -20)
 
@@ -118,6 +118,7 @@ def process(img_src_filename, DEBUG = False):
 		cv.waitKey()
 
 	# Calculate the size_max and size_min of a candidates
+	# MAGIC_NUMBER for size of the candidates
 	size_max = 0.2 * HEIGHT * WIDTH
 	size_min = 0.5 * 10 ** -3 * HEIGHT * WIDTH
 

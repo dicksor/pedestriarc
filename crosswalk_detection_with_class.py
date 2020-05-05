@@ -94,12 +94,12 @@ def process(img_src_filename, DEBUG = False):
 
 	# The block size parameters is base on the size of the given dataset
 	# A neural network based on smaller resolution could be useful for the future (cf: first papers)
-	th2 = cv.adaptiveThreshold(
-		img_blur, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 157, -10)
+	# MAGIC_NUMBER for threshold
 	th3 = cv.adaptiveThreshold(
 		img_blur, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 157, -10)
 
 	# Calculate the size_max and size_min of a candidates
+	# MAGIC_NUMBER for size of the candidates
 	size_max = 0.2 * HEIGHT * WIDTH
 	size_min = 0.5 * 10 ** -3 * HEIGHT * WIDTH
 
@@ -249,9 +249,9 @@ def process(img_src_filename, DEBUG = False):
 
 	# DEBUG
 	if DEBUG:
-		titles = ['Original Image', 'Adaptive Mean Thresholding',
+		titles = ['Original Image',
 				'Adaptive Gaussian Thresholding', 'After Mask']
-		images = [img_color, th2, th3, blank_image]
+		images = [img_color, th3, blank_image]
 
 		for i in range(4):
 			plt.subplot(2, 2, i+1), plt.imshow(images[i], 'gray')
