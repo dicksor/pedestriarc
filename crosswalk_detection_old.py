@@ -107,8 +107,8 @@ if __name__ == "__main__":
 	boundedLeft = []
 	boundedRight = []
 
-	img_color = cv.imread('tests/cam_20200112_145100.jpg', cv.IMREAD_UNCHANGED)
-	img = cv.imread('tests/cam_20200112_145100.jpg', 0)
+	img_color = cv.imread('tests/cam_20200119_103520.jpg', cv.IMREAD_UNCHANGED)
+	img = cv.imread('tests/cam_20200119_103520.jpg', 0)
 	img_blur = cv.medianBlur(img, 5)
 
 	HEIGHT, WIDTH = img_blur.shape
@@ -259,8 +259,7 @@ if __name__ == "__main__":
 		cv.line(img_color,(x0_R-m*vx_R, y0_R-m*vy_R), (x0_R+m*vx_R, y0_R+m*vy_R),(255,0,0),3)
 
 	# cv.drawContours(img, contours, -1, (255, 255, 0))
-	# RANSAC
-	# Add outlier data
+
 	plt.show()
 
 	titles = ['Original Image', 'Adaptive Mean Thresholding',

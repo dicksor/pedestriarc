@@ -347,7 +347,7 @@ if __name__ == "__main__":
 				pass
 				print('HEHE')
 
-	tadam = cv.imread('tests/cam_20200112_144735.jpg', cv.IMREAD_UNCHANGED)
+	tadam = cv.imread('tests/cam_20200119_103520.jpg', cv.IMREAD_UNCHANGED)
 
 	'''
 	print(CONSITENCY_SET)

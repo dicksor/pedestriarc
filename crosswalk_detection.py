@@ -145,17 +145,6 @@ def consistency_calculs(_data):
 # Used for debugging the modules
 def process(img_src_filename):
 
-	radius = 500  # px
-
-	bxLeft = []
-	byLeft = []
-	bxbyLeftArray = []
-	bxbyRightArray = []
-	bxRight = []
-	byRight = []
-	boundedLeft = []
-	boundedRight = []
-
 	img_color = cv.imread(img_src_filename, cv.IMREAD_UNCHANGED)
 	img = cv.imread(img_src_filename, 0)
 
@@ -374,7 +363,7 @@ def process(img_src_filename):
 
 	cv.rectangle(blank_image, (left,top), (right,bottom), (255, 0, 0), 2)
 
-	return ((left,top), (right,bottom))
+	#return ((left,top), (right,bottom))
 
 	#boundingBox = cv.minAreaRect(allPoint)
 	#cv.drawContours(tadam, boundingBox, (255, 255, 255), random.randint(0, 5))
@@ -394,7 +383,7 @@ def process(img_src_filename):
 	'''
 
 	# DEBUG
-	'''
+	
 	titles = ['Original Image', 'Adaptive Mean Thresholding',
 			  'Adaptive Gaussian Thresholding', 'After Mask']
 	images = [img_color, th2, th3, blank_image]
@@ -407,7 +396,7 @@ def process(img_src_filename):
 
 	contours, hierarchy = cv.findContours(
 		mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-	'''
+	
 
 	#cv.drawContours(img_color, contours, -1, (255, 0, 0))
 	#cv.imshow("Resul Candidates", img_color)
